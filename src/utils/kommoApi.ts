@@ -10,11 +10,11 @@ export const createKommoLead = async (formData: ContactFormData) => {
   console.log('Submitting form data: ', formData);
 
   const kommoData = {
-    name: [{ value: `${formData.firstName} ${formData.lastName}` }],
-    price: [{ value: 0 }],
-    status_id: [{ value: 58844526 }],
-    pipeline_id: [{ value: 7114094 }],
-    responsible_user_id: [{ value: 9531198 }],
+    name: `${formData.firstName} ${formData.lastName}`,
+    price: 0,
+    status_id: 58844526,
+    pipeline_id: 7114094,
+    responsible_user_id: 9531198,
     _embedded: {
       contacts: [
         {
