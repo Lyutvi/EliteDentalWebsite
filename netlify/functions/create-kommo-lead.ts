@@ -4,14 +4,27 @@ import fetch from 'node-fetch';
 const KOMMO_DOMAIN = process.env.KOMMO_DOMAIN;
 const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
 
+interface KommoCustomField {
+  field_code: string;
+  values: Array<{ value: string }>;
+}
+
+interface KommoContact {
+  first_name: string;
+  last_name: string;
+  custom_fields_values: KommoCustomField[];
+}
+
 interface KommoLeadData {
   name: Array<{ value: string }>;
-  custom_fields_values: Array<{
-    field_code: string;
-    values: Array<{ value: string }>;
-  }>;
+  created_at: number;
+  created_by: number;
+  status_id: number;
+  pipeline_id: number;
+  custom_fields_values: KommoCustomField[];
   _embedded: {
     tags: Array<{ name: string }>;
+    contacts: KommoContact[];
   };
 }
 

@@ -15,6 +15,10 @@ export async function createKommoLead(formData: ContactFormData) {
       name: [{
         value: `${formData.firstName} ${formData.lastName}`
       }],
+      created_at: Math.floor(Date.now() / 1000), // Current timestamp in seconds
+      created_by: 0,
+      status_id: 58844526, // Your pipeline's first status ID
+      pipeline_id: 7114094, // Your pipeline ID
       custom_fields_values: [
         {
           field_code: "EMAIL",
@@ -25,7 +29,7 @@ export async function createKommoLead(formData: ContactFormData) {
           values: [{ value: formData.phone }]
         },
         {
-          field_code: "MESSAGE",
+          field_code: "DESCRIPTION", // Using standard field for message
           values: [{ value: formData.message }]
         }
       ],
@@ -34,7 +38,21 @@ export async function createKommoLead(formData: ContactFormData) {
           {
             name: "Website Contact Form"
           }
-        ]
+        ],
+        contacts: [{
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          custom_fields_values: [
+            {
+              field_code: "EMAIL",
+              values: [{ value: formData.email }]
+            },
+            {
+              field_code: "PHONE",
+              values: [{ value: formData.phone }]
+            }
+          ]
+        }]
       }
     };
 
