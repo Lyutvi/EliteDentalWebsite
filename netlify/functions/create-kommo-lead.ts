@@ -100,6 +100,37 @@ const validateLeadData = (data: any): data is KommoLeadData => {
   return true;
 };
 
+// Store recent submissions to prevent duplicates
+const recentSubmissions = new Map<string, number>();
+const DUPLICATE_WINDOW_MS = 5000; // 5 seconds
+
+const isDuplicateSubmission = (data: KommoLeadData): boolean => {
+  // Create a unique key from the submission data
+  const key = JSON.stringify({
+    name: data.name[0].value,
+    email: data._embedded.contacts[0].custom_fields_values.find(f => f.field_code === "EMAIL")?.values[0].value,
+    phone: data._embedded.contacts[0].custom_fields_values.find(f => f.field_code === "PHONE")?.values[0].value,
+  });
+
+  const now = Date.now();
+  const lastSubmission = recentSubmissions.get(key);
+
+  // Clean up old entries
+  for (const [storedKey, timestamp] of recentSubmissions.entries()) {
+    if (now - timestamp > DUPLICATE_WINDOW_MS) {
+      recentSubmissions.delete(storedKey);
+    }
+  }
+
+  if (lastSubmission && now - lastSubmission < DUPLICATE_WINDOW_MS) {
+    console.log('Duplicate submission detected within window');
+    return true;
+  }
+
+  recentSubmissions.set(key, now);
+  return false;
+};
+
 const handler: Handler = async (event) => {
   console.log('Handler started - Request received');
   
@@ -150,6 +181,19 @@ const handler: Handler = async (event) => {
     }
 
     const leadData: KommoLeadData = rawData;
+
+    // Check for duplicate submissions
+    if (isDuplicateSubmission(leadData)) {
+      console.log('Duplicate submission rejected');
+      return {
+        statusCode: 409,
+        headers,
+        body: JSON.stringify({
+          message: 'Duplicate submission',
+          status: 'rejected'
+        })
+      };
+    }
 
     // Validate required environment variables
     if (!KOMMO_DOMAIN || !KOMMO_ACCESS_TOKEN) {
