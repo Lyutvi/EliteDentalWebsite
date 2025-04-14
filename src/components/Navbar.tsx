@@ -32,7 +32,20 @@ const Navbar = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+    document.body.style.overflow = !isMenuOpen ? 'hidden' : '';
   };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    document.body.style.overflow = '';
+  };
+
+  // Cleanup effect to ensure body scroll is restored when component unmounts
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const handleHomeClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,21 +70,30 @@ const Navbar = () => {
   const handleContactClick = (e: React.MouseEvent) => {
     e.preventDefault();
     
+    // Get window width for mobile detection
+    const isMobile = window.innerWidth < 768;
+    
     if (location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
         const contactForm = document.getElementById('contact-form');
-        if (contactForm) {
-          const yOffset = -100;
-          const y = contactForm.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        const formSection = document.getElementById('contact-form-section');
+        if (isMobile && formSection) {
+          const y = formSection.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        } else if (contactForm) {
+          const y = contactForm.getBoundingClientRect().top + window.pageYOffset - 100;
           window.scrollTo({ top: y, behavior: 'smooth' });
         }
       }, 200);
     } else {
       const contactForm = document.getElementById('contact-form');
-      if (contactForm) {
-        const yOffset = -100;
-        const y = contactForm.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      const formSection = document.getElementById('contact-form-section');
+      if (isMobile && formSection) {
+        const y = formSection.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      } else if (contactForm) {
+        const y = contactForm.getBoundingClientRect().top + window.pageYOffset - 100;
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
     }
@@ -127,6 +149,24 @@ const Navbar = () => {
               Elite Dental Solutions
             </span>
           </a>
+
+          <div className="flex items-center space-x-4">
+            <a 
+              href="tel:+359897376002" 
+              className="lg:hidden flex items-center text-dental-coral font-medium hover:text-dental-purple transition-colors duration-300"
+            >
+              <Phone size={18} className="mr-1" />
+              <span className="text-sm">+359 897 376 002</span>
+            </a>
+
+            <button 
+              className="lg:hidden text-dental-dark hover:text-dental transition-colors duration-300"
+              onClick={toggleMenu}
+              aria-label="Toggle mobile menu"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
 
           <div className="hidden lg:flex items-center space-x-8">
             <NavigationMenu>
@@ -212,21 +252,13 @@ const Navbar = () => {
               <span>+359 897 376 002</span>
             </a>
           </div>
-
-          <button 
-            className="lg:hidden text-dental-dark hover:text-dental transition-colors duration-300"
-            onClick={toggleMenu}
-            aria-label="Toggle mobile menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </div>
 
       <div 
         className={cn(
-          'fixed top-16 left-0 right-0 bg-white shadow-lg lg:hidden transition-all duration-300 ease-in-out overflow-hidden',
-          isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          'fixed top-16 left-0 right-0 bg-white shadow-lg lg:hidden transition-all duration-300 ease-in-out overflow-y-auto max-h-[calc(100vh-4rem)]',
+          isMenuOpen ? 'opacity-100' : 'max-h-0 opacity-0'
         )}
       >
         <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
@@ -239,7 +271,7 @@ const Navbar = () => {
                   key={link.name}
                   to={link.href}
                   className={`text-dental-dark hover:text-dental font-medium py-2 border-b ${index % 3 === 0 ? 'border-dental/30' : index % 3 === 1 ? 'border-dental-coral/30' : 'border-dental-mint/30'} transition-colors duration-300`}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => closeMenu()}
                 >
                   {link.name}
                 </Link>
@@ -251,7 +283,7 @@ const Navbar = () => {
                   href={link.href}
                   className={`text-dental-dark hover:text-dental font-medium py-2 border-b ${index % 3 === 0 ? 'border-dental/30' : index % 3 === 1 ? 'border-dental-coral/30' : 'border-dental-mint/30'} transition-colors duration-300`}
                   onClick={(e) => {
-                    setIsMenuOpen(false);
+                    closeMenu();
                     if (link.onClick) {
                       link.onClick(e);
                     }
@@ -271,7 +303,7 @@ const Navbar = () => {
                   key={service.name}
                   to={service.href}
                   className="block text-dental-dark/80 hover:text-dental transition-colors duration-300"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => closeMenu()}
                 >
                   {service.name}
                 </Link>
@@ -279,20 +311,12 @@ const Navbar = () => {
               <a
                 href="/#services"
                 className="block text-dental-dark/80 hover:text-dental transition-colors duration-300"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => closeMenu()}
               >
                 All Services
               </a>
             </div>
           </div>
-          
-          <a 
-            href="tel:+359897376002" 
-            className="flex items-center text-dental-coral font-medium hover:text-dental-purple transition-colors duration-300 py-2"
-          >
-            <Phone size={18} className="mr-2" />
-            <span>+359 897 376 002</span>
-          </a>
         </div>
       </div>
     </nav>
