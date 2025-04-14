@@ -10,17 +10,17 @@ interface KommoCustomField {
 }
 
 interface KommoContact {
+  name: string;
   first_name: string;
   last_name: string;
   custom_fields_values: KommoCustomField[];
 }
 
 interface KommoLeadData {
-  name: Array<{ value: string }>;
-  created_at: Array<{ value: number }>;
-  created_by: Array<{ value: number }>;
-  status_id: Array<{ value: number }>;
-  pipeline_id: Array<{ value: number }>;
+  name: string;
+  price: number;
+  status_id: number;
+  pipeline_id: number;
   custom_fields_values: KommoCustomField[];
   _embedded: {
     tags: Array<{ name: string }>;
