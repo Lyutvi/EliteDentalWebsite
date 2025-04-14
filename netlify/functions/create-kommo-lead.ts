@@ -4,9 +4,13 @@ import fetch from 'node-fetch';
 const KOMMO_DOMAIN = process.env.KOMMO_DOMAIN;
 const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
 
+interface KommoValue<T> {
+  value: T;
+}
+
 interface KommoCustomField {
   field_code: string;
-  values: Array<{ value: string }>;
+  values: Array<KommoValue<string>>;
 }
 
 interface KommoContact {
@@ -17,10 +21,10 @@ interface KommoContact {
 }
 
 interface KommoLeadData {
-  name: string;
-  price: number;
-  status_id: number;
-  pipeline_id: number;
+  name: Array<KommoValue<string>>;
+  price: Array<KommoValue<number>>;
+  status_id: Array<KommoValue<number>>;
+  pipeline_id: Array<KommoValue<number>>;
   custom_fields_values: KommoCustomField[];
   _embedded: {
     tags: Array<{ name: string }>;
