@@ -21,11 +21,11 @@ interface KommoContact {
 }
 
 interface KommoLeadData {
-  name: string;
-  price: number;
-  status_id: number;
-  pipeline_id: number;
-  responsible_user_id: number;
+  name: Array<KommoValue<string>>;
+  price: Array<KommoValue<number>>;
+  status_id: Array<KommoValue<number>>;
+  pipeline_id: Array<KommoValue<number>>;
+  responsible_user_id: Array<KommoValue<number>>;
   custom_fields_values: KommoCustomField[];
   _embedded: {
     contacts: KommoContact[];
@@ -41,35 +41,21 @@ const validateLeadData = (data: any): data is KommoLeadData => {
     return false;
   }
   
-  // Check required fields
-  const requiredFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'] as const;
-  for (const field of requiredFields) {
-    if (typeof data[field] === 'undefined') {
-      console.log(`Missing required field ${field}`);
+  // Check required array fields
+  const arrayFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'] as const;
+  for (const field of arrayFields) {
+    if (!Array.isArray(data[field])) {
+      console.log(`Field ${field} is not an array:`, data[field]);
       return false;
     }
-  }
-
-  // Type checks
-  if (typeof data.name !== 'string') {
-    console.log('name is not a string:', data.name);
-    return false;
-  }
-  if (typeof data.price !== 'number') {
-    console.log('price is not a number:', data.price);
-    return false;
-  }
-  if (typeof data.status_id !== 'number') {
-    console.log('status_id is not a number:', data.status_id);
-    return false;
-  }
-  if (typeof data.pipeline_id !== 'number') {
-    console.log('pipeline_id is not a number:', data.pipeline_id);
-    return false;
-  }
-  if (typeof data.responsible_user_id !== 'number') {
-    console.log('responsible_user_id is not a number:', data.responsible_user_id);
-    return false;
+    if (data[field].length === 0) {
+      console.log(`Field ${field} array is empty`);
+      return false;
+    }
+    if (typeof data[field][0]?.value === 'undefined') {
+      console.log(`Field ${field} first element does not have a value property:`, data[field][0]);
+      return false;
+    }
   }
 
   // Check embedded contacts
