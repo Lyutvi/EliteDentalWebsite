@@ -1,0 +1,309 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 212 33% 99%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 210 83% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 199 31% 52%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 189 86% 65%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 222 84% 5%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 83% 60%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 199 31% 52%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 189 86% 65%; 
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 213 27% 84%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Typography Styles */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-medium;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  p {
+    @apply text-base md:text-lg;
+  }
+}
+
+@layer components {
+  /* Custom Button Classes */
+  .btn-shine {
+    @apply relative overflow-hidden bg-dental px-6 py-3 text-white rounded-full transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply relative overflow-hidden bg-dental px-6 py-3 text-white rounded-full transition-all duration-300 hover:bg-dental-dark shadow-md hover:shadow-lg;
+  }
+
+  .btn-accent {
+    @apply relative overflow-hidden bg-dental-coral px-6 py-3 text-white rounded-full transition-all duration-300 hover:bg-dental-purple shadow-md hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply relative overflow-hidden bg-dental-mint px-6 py-3 text-dental-dark rounded-full transition-all duration-300 hover:bg-dental-secondary shadow-md hover:shadow-lg;
+  }
+
+  .btn-outline {
+    @apply relative overflow-hidden bg-transparent px-6 py-3 text-dental-dark border-2 border-dental rounded-full transition-all duration-300 hover:bg-dental/10 shadow-sm hover:shadow-md;
+  }
+
+  .btn-shine::after {
+    content: '';
+    @apply absolute inset-0 bg-shimmer bg-200% opacity-0 transition-opacity duration-300;
+  }
+
+  .btn-shine:hover::after {
+    @apply opacity-100;
+  }
+
+  /* Service Card Styles */
+  .service-card {
+    @apply relative overflow-hidden rounded-2xl bg-white p-6 shadow-card transition-all duration-300 hover:shadow-blue-glow;
+  }
+
+  .service-card:nth-child(3n+1)::before {
+    content: '';
+    @apply absolute -right-16 -top-16 h-32 w-32 rounded-full bg-dental-light opacity-10 transition-transform duration-300;
+  }
+
+  .service-card:nth-child(3n+2)::before {
+    content: '';
+    @apply absolute -right-16 -top-16 h-32 w-32 rounded-full bg-dental-coral/30 opacity-10 transition-transform duration-300;
+  }
+
+  .service-card:nth-child(3n+3)::before {
+    content: '';
+    @apply absolute -right-16 -top-16 h-32 w-32 rounded-full bg-dental-mint/30 opacity-10 transition-transform duration-300;
+  }
+
+  .service-card:hover::before {
+    @apply scale-150;
+  }
+
+  /* Pill Badge */
+  .pill-badge {
+    @apply inline-flex items-center px-4 py-1 rounded-full bg-dental-light/20 text-dental-dark text-sm font-medium;
+  }
+
+  .pill-badge-primary {
+    @apply inline-flex items-center px-4 py-1 rounded-full bg-dental/20 text-dental-dark text-sm font-medium;
+  }
+
+  .pill-badge-accent {
+    @apply inline-flex items-center px-4 py-1 rounded-full bg-dental-coral/20 text-dental-purple text-sm font-medium;
+  }
+
+  .pill-badge-secondary {
+    @apply inline-flex items-center px-4 py-1 rounded-full bg-dental-mint/20 text-dental-secondary text-sm font-medium;
+  }
+
+  /* Animated Section Titles */
+  .section-title {
+    @apply relative inline-block font-display text-3xl font-bold after:absolute after:bottom-0 after:left-0 after:h-1 after:w-1/3 after:rounded-full after:bg-dental-tertiary;
+  }
+
+  .section-title-primary {
+    @apply relative inline-block font-display text-3xl font-bold after:absolute after:bottom-0 after:left-0 after:h-1 after:w-1/3 after:rounded-full after:bg-dental;
+  }
+
+  .section-title-accent {
+    @apply relative inline-block font-display text-3xl font-bold after:absolute after:bottom-0 after:left-0 after:h-1 after:w-1/3 after:rounded-full after:bg-dental-coral;
+  }
+
+  /* Glass Card */
+  .glass-card {
+    @apply rounded-xl backdrop-blur-md bg-white/70 shadow-soft;
+  }
+
+  .glass-card-colored {
+    @apply rounded-xl backdrop-blur-md bg-gradient-to-br from-white/80 to-dental-light/20 shadow-soft;
+  }
+
+  /* Testimonial Card */
+  .testimonial-card {
+    @apply relative rounded-2xl p-6 shadow-card bg-gradient-to-br from-white to-dental-gray;
+  }
+
+  .testimonial-card-primary {
+    @apply relative rounded-2xl p-6 shadow-card bg-gradient-to-br from-white to-dental-light/30;
+  }
+
+  .testimonial-card-accent {
+    @apply relative rounded-2xl p-6 shadow-card bg-gradient-to-br from-white to-dental-coral/20;
+  }
+
+  .testimonial-card::after {
+    content: '"';
+    @apply absolute right-6 top-4 text-6xl font-display font-bold text-dental-light/30;
+  }
+
+  /* Gradient sections */
+  .gradient-bg-blue {
+    @apply bg-gradient-to-r from-dental-navy via-dental to-dental-light;
+  }
+
+  .gradient-bg-accent {
+    @apply bg-gradient-to-r from-dental-purple via-dental-coral to-dental-tertiary;
+  }
+
+  .gradient-bg-mint {
+    @apply bg-gradient-to-r from-dental-secondary via-dental-mint to-dental-light;
+  }
+
+  /* Highlight text */
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-dental-dark to-dental;
+  }
+
+  .text-gradient-accent {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-dental-purple to-dental-coral;
+  }
+}
+
+@layer utilities {
+  .bg-200\% {
+    background-size: 200% 100%;
+  }
+
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  @apply scroll-pt-16;
+}
+
+/* Scroll Bar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dental-gray;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dental rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-dental-dark;
+}
+
+/* Scroll Reveal Classes */
+.reveal {
+  @apply opacity-0 transition-all duration-700 ease-out;
+}
+
+.reveal.active {
+  @apply opacity-100 translate-y-0;
+}
+
+.reveal[data-direction="left"] {
+  @apply -translate-x-20;
+}
+
+.reveal[data-direction="right"] {
+  @apply translate-x-20;
+}
+
+.reveal[data-direction="up"] {
+  @apply translate-y-20;
+}
+
+.reveal[data-direction="down"] {
+  @apply -translate-y-20;
+}
+
+.reveal.active[data-direction] {
+  @apply translate-x-0 translate-y-0;
+}
