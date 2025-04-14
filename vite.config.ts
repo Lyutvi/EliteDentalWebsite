@@ -10,15 +10,15 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
-      port: 5173,
+      port: 8080,
       strictPort: true,
       host: true,
       hmr: {
         timeout: 120000,
         protocol: 'ws',
         host: 'localhost',
-        port: 5173,
-        clientPort: 5173,
+        port: 8080,
+        clientPort: 8080,
         overlay: false
       },
       watch: {

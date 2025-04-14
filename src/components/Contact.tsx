@@ -3,6 +3,7 @@ import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { trackFormStart, trackFormComplete, trackContactFormSubmission } from "@/utils/metaPixel";
 import { createKommoLead } from "@/utils/kommoApi";
+import MapComponent from './GoogleMap';
 
 interface FormData {
   firstName: string;
@@ -187,6 +188,12 @@ const Contact = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Google Maps */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-dental-gray/10">
+              <h3 className="text-2xl font-display font-bold mb-6 text-dental-dark">Find Us</h3>
+              <MapComponent />
             </div>
           </div>
           
