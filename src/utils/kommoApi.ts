@@ -10,9 +10,11 @@ export async function createKommoLead(formData: ContactFormData) {
   try {
     console.log('Submitting form data:', formData);
 
+    const fullName = `${formData.firstName} ${formData.lastName}`;
+
     // Structure the data according to Kommo's API requirements
     const kommoData = {
-      name: [{ value: formData.message || "Website Contact Form Lead" }],
+      name: [{ value: fullName }],
       price: [{ value: 0 }],
       status_id: [{ value: 58844526 }],
       pipeline_id: [{ value: 7114094 }],
@@ -20,7 +22,7 @@ export async function createKommoLead(formData: ContactFormData) {
       _embedded: {
         contacts: [
           {
-            name: `${formData.firstName} ${formData.lastName}`,
+            name: fullName,
             first_name: formData.firstName,
             last_name: formData.lastName,
             custom_fields_values: [
@@ -44,7 +46,7 @@ export async function createKommoLead(formData: ContactFormData) {
       custom_fields_values: [
         {
           field_code: "DESCRIPTION",
-          values: [{ value: formData.message }]
+          values: [{ value: formData.message || "Contact form submission" }]
         }
       ]
     };
