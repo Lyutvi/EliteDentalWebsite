@@ -10,44 +10,44 @@ export async function createKommoLead(formData: ContactFormData) {
   try {
     console.log('Submitting form data:', formData);
 
-    // Structure the data to match KommoCRM's expectations
-    const formattedData = {
-      _kommo: {
-        name: `${formData.firstName} ${formData.lastName}`,
-        custom_fields_values: [
-          {
-            field_name: 'Email',
-            values: [{ value: formData.email }]
-          },
-          {
-            field_name: 'Phone',
-            values: [{ value: formData.phone }]
-          },
-          {
-            field_name: 'Message',
-            values: [{ value: formData.message }]
-          }
-        ],
-        tags: ["Website Contact Form"]
-      },
-      // Keep original fields for email notifications
+    // Structure the data according to Kommo's API requirements
+    const kommoData = {
       name: `${formData.firstName} ${formData.lastName}`,
-      email: formData.email,
-      phone: formData.phone,
-      message: formData.message
+      custom_fields_values: [
+        {
+          field_code: "EMAIL",
+          values: [{ value: formData.email }]
+        },
+        {
+          field_code: "PHONE",
+          values: [{ value: formData.phone }]
+        },
+        {
+          field_code: "MESSAGE",
+          values: [{ value: formData.message }]
+        }
+      ],
+      _embedded: {
+        tags: [
+          {
+            name: "Website Contact Form"
+          }
+        ]
+      }
     };
 
-    const response = await fetch('https://formspree.io/f/xdoqbwrw', {
+    // Send to Netlify Function
+    const response = await fetch('/.netlify/functions/create-kommo-lead', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
       },
-      body: JSON.stringify(formattedData)
+      body: JSON.stringify(kommoData)
     });
 
     if (!response.ok) {
-      throw new Error(`Form submission failed: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(`Form submission failed: ${JSON.stringify(errorData)}`);
     }
 
     const data = await response.json();
