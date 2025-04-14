@@ -92,7 +92,7 @@ const Contact = () => {
 
     try {
       await createKommoLead(formData);
-
+      
       // Track successful form submission
       trackContactFormSubmission('contact');
       trackFormComplete('contact');
@@ -140,64 +140,59 @@ const Contact = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Contact Information */}
-          <div className="space-y-8 reveal" data-direction="left">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div className="reveal" data-direction="left">
+            {/* Contact Info Section */}
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-dental-gray/10">
-              <h3 className="text-2xl font-display font-bold mb-6 text-dental-dark">Our Address</h3>
+              <h3 className="text-2xl font-display font-bold mb-6 text-dental-dark">Get in Touch</h3>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-start">
-                  <div className="bg-dental-light/30 p-3 rounded-full mr-4">
-                    <MapPin className="text-dental w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-dental-dark">Location</h4>
-                    <p className="text-dental-dark/80">Manastirski Livadi, zh.k. Manastirski livadi B 65, 1404 Sofia</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="bg-dental-light/30 p-3 rounded-full mr-4">
-                    <Phone className="text-dental w-6 h-6" />
-                  </div>
-                  <div>
+                  <Phone className="w-5 h-5 mt-1 text-dental" />
+                  <div className="ml-4">
                     <h4 className="font-medium text-dental-dark">Phone</h4>
-                    <p className="text-dental-dark/80">+359 89 936 6491</p>
+                    <p className="text-dental-dark/80">+359 88 952 0202</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-dental-light/30 p-3 rounded-full mr-4">
-                    <Mail className="text-dental w-6 h-6" />
-                  </div>
-                  <div>
+                  <Mail className="w-5 h-5 mt-1 text-dental" />
+                  <div className="ml-4">
                     <h4 className="font-medium text-dental-dark">Email</h4>
-                    <p className="text-dental-dark/80">info@elitedentalsolutions.eu</p>
+                    <p className="text-dental-dark/80">office@elitedentalsolutions.eu</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-dental-light/30 p-3 rounded-full mr-4">
-                    <Clock className="text-dental w-6 h-6" />
+                  <MapPin className="w-5 h-5 mt-1 text-dental" />
+                  <div className="ml-4">
+                    <h4 className="font-medium text-dental-dark">Location</h4>
+                    <p className="text-dental-dark/80">
+                      ul. "Tsar Asen" 64, <br />
+                      Plovdiv, Bulgaria
+                    </p>
                   </div>
-                  <div>
+                </div>
+                
+                <div className="flex items-start">
+                  <Clock className="w-5 h-5 mt-1 text-dental" />
+                  <div className="ml-4">
                     <h4 className="font-medium text-dental-dark">Working Hours</h4>
-                    <p className="text-dental-dark/80">Monday - Friday: 9:00 - 19:00</p>
-                    <p className="text-dental-dark/80">Saturday: 9:00 - 14:00</p>
+                    <p className="text-dental-dark/80">
+                      Monday - Friday: 9:00 - 19:00 <br />
+                      Saturday: By Appointment
+                    </p>
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Google Maps */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-dental-gray/10">
-              <h3 className="text-2xl font-display font-bold mb-6 text-dental-dark">Find Us</h3>
-              <MapComponent />
+              
+              {/* Map Component */}
+              <div className="mt-8">
+                <MapComponent />
+              </div>
             </div>
           </div>
           
-          {/* Contact Form */}
           <div className="reveal" data-direction="right">
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-dental-gray/10">
               <h3 className="text-2xl font-display font-bold mb-6 text-dental-dark">Contact Us</h3>

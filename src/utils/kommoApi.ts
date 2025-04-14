@@ -12,11 +12,11 @@ export async function createKommoLead(formData: ContactFormData) {
 
     // Structure the data according to Kommo's API requirements
     const kommoData = {
-      name: formData.message || "Website Contact Form Lead",
-      price: 0,
-      status_id: 58844526,
-      pipeline_id: 7114094,
-      responsible_user_id: 0, // Will be assigned to Elite Detal Solutions
+      name: [{ value: formData.message || "Website Contact Form Lead" }],
+      price: [{ value: 0 }],
+      status_id: [{ value: 58844526 }],
+      pipeline_id: [{ value: 7114094 }],
+      responsible_user_id: [{ value: 0 }],
       _embedded: {
         contacts: [
           {
