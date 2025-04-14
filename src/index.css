@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -67,20 +66,26 @@
     --input: 217 33% 17%;
     --ring: 213 27% 84%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 
   /* Typography Styles */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-medium;
+    @apply font-display font-medium tracking-tight;
+  }
+
+  .logo-text {
+    @apply font-display font-bold text-gradient-primary tracking-tight;
+  }
+
+  .nav-link {
+    @apply font-sans font-medium;
   }
 
   h1 {

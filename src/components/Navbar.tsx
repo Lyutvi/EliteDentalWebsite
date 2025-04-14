@@ -123,7 +123,7 @@ const Navbar = () => {
               alt="Elite Dental Solutions Logo"
               className="w-10 h-10 object-contain"
             />
-            <span className="text-sm md:text-xl font-display font-bold text-gradient-primary">
+            <span className="logo-text text-sm md:text-xl">
               Elite Dental Solutions
             </span>
           </a>
@@ -135,7 +135,7 @@ const Navbar = () => {
                   if (link.isServicesMenu) {
                     return (
                       <NavigationMenuItem key={link.name}>
-                        <NavigationMenuTrigger className="relative text-dental-dark hover:text-dental font-medium transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:w-0 after:bg-dental-coral after:transition-all after:duration-300 hover:after:w-full px-4 py-2 text-base bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent">
+                        <NavigationMenuTrigger className="nav-link relative text-dental-dark hover:text-dental transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:w-0 after:bg-dental-coral after:transition-all after:duration-300 hover:after:w-full px-4 py-2 text-base bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent">
                           Services
                         </NavigationMenuTrigger>
                         <NavigationMenuContent>
