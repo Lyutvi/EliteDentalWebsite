@@ -73,19 +73,23 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Poppins', sans-serif;
   }
 
   /* Typography Styles */
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-medium tracking-tight;
+    font-family: 'Playfair Display', serif;
   }
 
   .logo-text {
     @apply font-display font-bold text-gradient-primary tracking-tight;
+    font-family: 'Playfair Display', serif;
   }
 
   .nav-link {
     @apply font-sans font-medium;
+    font-family: 'Poppins', sans-serif;
   }
 
   h1 {
