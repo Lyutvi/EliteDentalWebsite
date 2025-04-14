@@ -101,6 +101,8 @@ const validateLeadData = (data: any): data is KommoLeadData => {
 };
 
 const handler: Handler = async (event) => {
+  console.log('Handler started - Request received');
+  
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -110,6 +112,7 @@ const handler: Handler = async (event) => {
 
   // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return {
       statusCode: 204,
       headers,
@@ -119,6 +122,7 @@ const handler: Handler = async (event) => {
 
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
+    console.log('Invalid HTTP method:', event.httpMethod);
     return {
       statusCode: 405,
       headers,
@@ -127,9 +131,11 @@ const handler: Handler = async (event) => {
   }
 
   try {
+    console.log('Raw event body:', event.body);
+    
     // Parse and validate the incoming request body
     const rawData = JSON.parse(event.body || '{}');
-    console.log('Received data:', JSON.stringify(rawData, null, 2));
+    console.log('Parsed request data:', JSON.stringify(rawData, null, 2));
 
     if (!validateLeadData(rawData)) {
       console.error('Invalid lead data structure:', rawData);
@@ -147,17 +153,18 @@ const handler: Handler = async (event) => {
 
     // Validate required environment variables
     if (!KOMMO_DOMAIN || !KOMMO_ACCESS_TOKEN) {
+      console.error('Missing environment variables');
       throw new Error('Missing required environment variables');
     }
 
-    // Log the data being sent
+    const kommoUrl = `https://${KOMMO_DOMAIN}/api/v4/leads`;
     console.log('Making request to Kommo API:', {
-      url: `https://${KOMMO_DOMAIN}/api/v4/leads`,
+      url: kommoUrl,
       data: JSON.stringify(leadData, null, 2)
     });
 
     // Make request to Kommo API
-    const response = await fetch(`https://${KOMMO_DOMAIN}/api/v4/leads`, {
+    const response = await fetch(kommoUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -167,34 +174,45 @@ const handler: Handler = async (event) => {
     });
 
     const responseData = await response.json();
+    console.log('Kommo API response status:', response.status);
     console.log('Kommo API response:', JSON.stringify(responseData, null, 2));
 
     if (!response.ok) {
-      console.error('Kommo API error:', responseData);
+      console.error('Kommo API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: responseData
+      });
       return {
         statusCode: response.status,
         headers,
         body: JSON.stringify({
           message: 'Error creating lead in Kommo CRM',
-          error: responseData
+          error: responseData,
+          requestData: leadData // Include the request data for debugging
         }),
       };
     }
 
+    console.log('Successfully created lead');
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify(responseData),
     };
   } catch (error) {
-    console.error('Error creating lead:', error);
+    console.error('Error in handler:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
 
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
         message: 'Error creating lead in Kommo CRM',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack
+        } : 'Unknown error'
       }),
     };
   }
