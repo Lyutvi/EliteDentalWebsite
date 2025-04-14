@@ -33,6 +33,23 @@ interface KommoLeadData {
   };
 }
 
+const validateLeadData = (data: any): data is KommoLeadData => {
+  if (!data || typeof data !== 'object') return false;
+  
+  // Check required array fields
+  const arrayFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'];
+  for (const field of arrayFields) {
+    if (!Array.isArray(data[field]) || !data[field][0]?.value) return false;
+  }
+
+  // Check embedded contacts
+  if (!data._embedded?.contacts?.[0]) return false;
+  const contact = data._embedded.contacts[0];
+  if (!contact.name || !contact.first_name || !contact.last_name) return false;
+
+  return true;
+};
+
 const handler: Handler = async (event) => {
   // Enable CORS
   const headers = {
@@ -60,8 +77,23 @@ const handler: Handler = async (event) => {
   }
 
   try {
-    // Parse the incoming request body
-    const leadData: KommoLeadData = JSON.parse(event.body || '{}');
+    // Parse and validate the incoming request body
+    const rawData = JSON.parse(event.body || '{}');
+    console.log('Received data:', JSON.stringify(rawData, null, 2));
+
+    if (!validateLeadData(rawData)) {
+      console.error('Invalid lead data structure:', rawData);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          message: 'Invalid lead data structure',
+          receivedData: rawData
+        })
+      };
+    }
+
+    const leadData: KommoLeadData = rawData;
 
     // Validate required environment variables
     if (!KOMMO_DOMAIN || !KOMMO_ACCESS_TOKEN) {
@@ -71,7 +103,7 @@ const handler: Handler = async (event) => {
     // Log the data being sent
     console.log('Making request to Kommo API:', {
       url: `https://${KOMMO_DOMAIN}/api/v4/leads`,
-      data: leadData
+      data: JSON.stringify(leadData, null, 2)
     });
 
     // Make request to Kommo API
@@ -85,7 +117,7 @@ const handler: Handler = async (event) => {
     });
 
     const responseData = await response.json();
-    console.log('Kommo API response:', responseData);
+    console.log('Kommo API response:', JSON.stringify(responseData, null, 2));
 
     if (!response.ok) {
       console.error('Kommo API error:', responseData);
