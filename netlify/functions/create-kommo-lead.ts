@@ -5,7 +5,7 @@ const KOMMO_DOMAIN = process.env.KOMMO_DOMAIN;
 const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
 
 interface KommoLeadData {
-  name: string;
+  name: Array<{ value: string }>;
   custom_fields_values: Array<{
     field_code: string;
     values: Array<{ value: string }>;
@@ -50,6 +50,11 @@ const handler: Handler = async (event) => {
       throw new Error('Missing required environment variables');
     }
 
+    console.log('Making request to Kommo API:', {
+      url: `https://${KOMMO_DOMAIN}/api/v4/leads`,
+      data: leadData
+    });
+
     // Make request to Kommo API
     const response = await fetch(`https://${KOMMO_DOMAIN}/api/v4/leads`, {
       method: 'POST',
@@ -61,6 +66,7 @@ const handler: Handler = async (event) => {
     });
 
     const responseData = await response.json();
+    console.log('Kommo API response:', responseData);
 
     if (!response.ok) {
       console.error('Kommo API error:', responseData);

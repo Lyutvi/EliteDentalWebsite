@@ -12,7 +12,9 @@ export async function createKommoLead(formData: ContactFormData) {
 
     // Structure the data according to Kommo's API requirements
     const kommoData = {
-      name: `${formData.firstName} ${formData.lastName}`,
+      name: [{
+        value: `${formData.firstName} ${formData.lastName}`
+      }],
       custom_fields_values: [
         {
           field_code: "EMAIL",
