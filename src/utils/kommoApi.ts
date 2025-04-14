@@ -12,46 +12,41 @@ export async function createKommoLead(formData: ContactFormData) {
 
     // Structure the data according to Kommo's API requirements
     const kommoData = {
-      name: [{ value: `${formData.firstName} ${formData.lastName}` }],
-      price: [{ value: 0 }],
-      status_id: [{ value: 58844526 }],
-      pipeline_id: [{ value: 7114094 }],
-      custom_fields_values: [
-        {
-          field_code: "EMAIL",
-          values: [{ value: formData.email }]
-        },
-        {
-          field_code: "PHONE",
-          values: [{ value: formData.phone }]
-        },
-        {
-          field_code: "DESCRIPTION",
-          values: [{ value: formData.message }]
-        }
-      ],
+      name: formData.message || "Website Contact Form Lead",
+      price: 0,
+      status_id: 58844526,
+      pipeline_id: 7114094,
+      responsible_user_id: 0, // Will be assigned to Elite Detal Solutions
       _embedded: {
+        contacts: [
+          {
+            name: `${formData.firstName} ${formData.lastName}`,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            custom_fields_values: [
+              {
+                field_code: "EMAIL",
+                values: [{ value: formData.email }]
+              },
+              {
+                field_code: "PHONE",
+                values: [{ value: formData.phone }]
+              }
+            ]
+          }
+        ],
         tags: [
           {
             name: "Website Contact Form"
           }
-        ],
-        contacts: [{
-          name: `${formData.firstName} ${formData.lastName}`,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          custom_fields_values: [
-            {
-              field_code: "EMAIL",
-              values: [{ value: formData.email }]
-            },
-            {
-              field_code: "PHONE",
-              values: [{ value: formData.phone }]
-            }
-          ]
-        }]
-      }
+        ]
+      },
+      custom_fields_values: [
+        {
+          field_code: "DESCRIPTION",
+          values: [{ value: formData.message }]
+        }
+      ]
     };
 
     // Send to Netlify Function
