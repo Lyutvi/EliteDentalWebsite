@@ -34,19 +34,69 @@ interface KommoLeadData {
 }
 
 const validateLeadData = (data: any): data is KommoLeadData => {
-  if (!data || typeof data !== 'object') return false;
+  console.log('Starting validation of lead data');
+  
+  if (!data || typeof data !== 'object') {
+    console.log('Data is not an object:', data);
+    return false;
+  }
   
   // Check required array fields
-  const arrayFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'];
+  const arrayFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'] as const;
   for (const field of arrayFields) {
-    if (!Array.isArray(data[field]) || !data[field][0]?.value) return false;
+    if (!Array.isArray(data[field])) {
+      console.log(`Field ${field} is not an array:`, data[field]);
+      return false;
+    }
+    if (data[field].length === 0) {
+      console.log(`Field ${field} array is empty`);
+      return false;
+    }
+    if (typeof data[field][0]?.value === 'undefined') {
+      console.log(`Field ${field} first element does not have a value property:`, data[field][0]);
+      return false;
+    }
   }
 
   // Check embedded contacts
-  if (!data._embedded?.contacts?.[0]) return false;
-  const contact = data._embedded.contacts[0];
-  if (!contact.name || !contact.first_name || !contact.last_name) return false;
+  if (!data._embedded?.contacts) {
+    console.log('Missing _embedded.contacts');
+    return false;
+  }
+  
+  if (!Array.isArray(data._embedded.contacts) || data._embedded.contacts.length === 0) {
+    console.log('_embedded.contacts is not a non-empty array:', data._embedded.contacts);
+    return false;
+  }
 
+  const contact = data._embedded.contacts[0];
+  if (!contact.name || typeof contact.name !== 'string') {
+    console.log('Contact name is missing or not a string:', contact.name);
+    return false;
+  }
+  if (!contact.first_name || typeof contact.first_name !== 'string') {
+    console.log('Contact first_name is missing or not a string:', contact.first_name);
+    return false;
+  }
+  if (!contact.last_name || typeof contact.last_name !== 'string') {
+    console.log('Contact last_name is missing or not a string:', contact.last_name);
+    return false;
+  }
+
+  // Check custom fields
+  if (!Array.isArray(contact.custom_fields_values)) {
+    console.log('Contact custom_fields_values is not an array:', contact.custom_fields_values);
+    return false;
+  }
+
+  for (const field of contact.custom_fields_values) {
+    if (!field.field_code || !Array.isArray(field.values) || field.values.length === 0) {
+      console.log('Invalid custom field structure:', field);
+      return false;
+    }
+  }
+
+  console.log('Lead data validation passed');
   return true;
 };
 
