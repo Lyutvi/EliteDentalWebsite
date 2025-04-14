@@ -28,8 +28,8 @@ const HeroSection = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="lg:w-1/2 reveal" data-direction="left">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gradient-purple leading-tight">
-              DENTAL TOURISM <span className="text-gradient-blue">IN BULGARIA</span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gradient-primary inline-block relative after:content-[''] after:absolute after:-bottom-2 after:left-1/4 after:right-1/4 after:h-1 after:bg-dental-tertiary after:rounded-full reveal" data-direction="up">
+              DENTAL TOURISM IN BULGARIA
             </h1>
             <p className="text-xl text-dental-dark/80 mb-8 max-w-xl">
               Experience world-class dental care at a fraction of Western prices. Our comprehensive dental tourism packages combine excellent dental treatments with a memorable travel experience.
@@ -57,10 +57,17 @@ const HeroSection = () => {
               <div className="absolute -top-6 -left-6 w-24 h-24 bg-dental-purple/20 rounded-full blur-xl"></div>
               <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-ocean-blue/20 rounded-full blur-xl"></div>
               <div className="relative z-10 bg-white p-2 rounded-2xl shadow-xl shadow-dental-dark/5 border border-dental-light/20">
-                <img 
-                  src="/images/Airplane Landing.jpg" 
-                  alt="Dental Tourism in Bulgaria - Airplane Landing" 
+                <video 
+                  src="/videos/airplane-landing.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
                   className="w-full h-full object-cover rounded-xl"
+                  onLoadedMetadata={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.playbackRate = 0.75;
+                  }}
                 />
               </div>
             </div>

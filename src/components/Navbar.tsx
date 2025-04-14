@@ -21,14 +21,22 @@ const Navbar = () => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
         setScrolled(true);
+        document.documentElement.style.setProperty('--navbar-height', '56px');
       } else {
         setScrolled(false);
+        document.documentElement.style.setProperty('--navbar-height', '72px');
       }
     };
 
+    // Set initial navbar height
+    document.documentElement.style.setProperty('--navbar-height', scrolled ? '56px' : '72px');
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.documentElement.style.removeProperty('--navbar-height');
+    };
+  }, [scrolled]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -127,13 +135,14 @@ const Navbar = () => {
   return (
     <nav 
       className={cn(
-        'fixed top-0 left-0 w-full z-50 transition-all duration-300',
+        'fixed top-0 left-0 w-full transition-all duration-300',
         scrolled 
           ? 'bg-white/90 shadow-md backdrop-blur-md py-2' 
           : 'bg-transparent py-4'
       )}
+      style={{ zIndex: 9999 }}
     >
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="container mx-auto px-4 md:px-6 relative">
         <div className="flex items-center justify-between">
           <a 
             href="/#home" 
@@ -151,16 +160,8 @@ const Navbar = () => {
           </a>
 
           <div className="flex items-center space-x-4">
-            <a 
-              href="tel:+359897376002" 
-              className="lg:hidden flex items-center text-dental-coral font-medium hover:text-dental-purple transition-colors duration-300"
-            >
-              <Phone size={18} className="mr-1" />
-              <span className="text-sm">+359 897 376 002</span>
-            </a>
-
             <button 
-              className="lg:hidden text-dental-dark hover:text-dental transition-colors duration-300"
+              className="lg:hidden text-dental-dark hover:text-dental transition-colors duration-300 relative z-50"
               onClick={toggleMenu}
               aria-label="Toggle mobile menu"
             >
@@ -257,11 +258,25 @@ const Navbar = () => {
 
       <div 
         className={cn(
-          'fixed top-16 left-0 right-0 bg-white shadow-lg lg:hidden transition-all duration-300 ease-in-out overflow-y-auto max-h-[calc(100vh-4rem)]',
-          isMenuOpen ? 'opacity-100' : 'max-h-0 opacity-0'
+          'fixed left-0 right-0 bg-white/95 backdrop-blur-sm lg:hidden transition-all duration-300 ease-in-out overflow-y-auto h-[calc(100vh-var(--navbar-height))]',
+          isMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
         )}
+        style={{ 
+          top: 'var(--navbar-height)',
+          zIndex: 9998,
+          WebkitOverflowScrolling: 'touch'
+        }}
       >
-        <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
+        <div className="container mx-auto px-4 py-4 flex flex-col space-y-4 pb-20">
+          <a
+            href="tel:+359897376002"
+            className="flex items-center justify-center gap-2 text-dental-coral hover:text-dental-purple transition-colors duration-300 py-3 border-b border-dental-coral/30"
+            onClick={() => closeMenu()}
+          >
+            <Phone size={20} />
+            <span className="font-medium">+359 897 376 002</span>
+          </a>
+
           {mainNavLinks.map((link, index) => {
             const isExternalPage = !link.href.startsWith('/#');
             

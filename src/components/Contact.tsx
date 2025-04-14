@@ -317,7 +317,7 @@ const Contact = () => {
       </section>
 
       {/* Sticky Mobile Call Button */}
-      <div className="fixed bottom-6 right-6 md:hidden z-50">
+      <div className="fixed bottom-6 left-6 md:hidden z-50">
         <a
           href="tel:+359889520202"
           className="flex items-center justify-center gap-2 bg-dental text-white px-4 py-3 rounded-full shadow-lg hover:bg-dental-dark transition-colors duration-300"

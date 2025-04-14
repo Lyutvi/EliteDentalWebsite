@@ -67,7 +67,7 @@ const FAQSection = () => {
       
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-gradient-purple inline-block relative after:content-[''] after:absolute after:-bottom-2 after:left-1/4 after:right-1/4 after:h-1 after:bg-vivid-purple after:rounded-full reveal" data-direction="up">
+          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4 text-gradient-primary inline-block relative after:content-[''] after:absolute after:-bottom-2 after:left-1/4 after:right-1/4 after:h-1 after:bg-dental-tertiary after:rounded-full reveal" data-direction="up">
             FREQUENTLY ASKED QUESTIONS
           </h2>
           <p className="text-lg text-dental-dark/80 max-w-3xl mx-auto reveal" data-direction="up">
