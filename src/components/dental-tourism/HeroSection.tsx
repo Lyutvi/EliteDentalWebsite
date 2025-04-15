@@ -10,10 +10,10 @@ const HeroSection = () => {
     navigate('/');
     // Add a small delay to ensure navigation completes before scrolling
     setTimeout(() => {
-      const contactForm = document.getElementById('contact-form');
-      if (contactForm) {
+      const formElement = document.querySelector('form');
+      if (formElement) {
         const yOffset = -100; // Offset to account for fixed header
-        const y = contactForm.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        const y = formElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
     }, 100);
@@ -40,7 +40,7 @@ const HeroSection = () => {
                 className="btn-primary group"
                 onClick={handleContactClick}
               >
-                Book Consultation
+                Book Free Consultation
                 <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
               </a>
               <a 

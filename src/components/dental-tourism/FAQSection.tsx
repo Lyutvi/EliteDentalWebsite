@@ -102,7 +102,7 @@ const FAQSection = () => {
               className="btn-secondary"
               onClick={handleContactClick}
             >
-              Contact Us
+              Book Free Consultation
             </a>
           </div>
         </div>
