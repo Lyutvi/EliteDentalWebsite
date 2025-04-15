@@ -28,7 +28,7 @@ const HeroSection = () => {
       
       <div className="container mx-auto px-4 relative">
         <div className="flex flex-col lg:flex-row items-center gap-12">
-          <div className="lg:w-1/2 order-2 lg:order-1 reveal" data-direction="left">
+          <div className="lg:w-1/2 order-1 lg:order-1 reveal" data-direction="left">
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-gradient-primary">
               Professional Teeth Whitening
             </h1>
@@ -57,7 +57,7 @@ const HeroSection = () => {
               </a>
             </div>
           </div>
-          <div className="lg:w-1/2 order-1 lg:order-2 reveal" data-direction="right">
+          <div className="lg:w-1/2 order-2 lg:order-2 reveal" data-direction="right">
             <div className="rounded-2xl overflow-hidden shadow-2xl shadow-dental-dark/5 relative">
               <img 
                 src="/images/Whitening.avif" 

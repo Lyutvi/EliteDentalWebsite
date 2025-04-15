@@ -57,17 +57,10 @@ const HeroSection = () => {
               <div className="absolute -top-6 -left-6 w-24 h-24 bg-dental-purple/20 rounded-full blur-xl"></div>
               <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-ocean-blue/20 rounded-full blur-xl"></div>
               <div className="relative z-10 bg-white p-2 rounded-2xl shadow-xl shadow-dental-dark/5 border border-dental-light/20">
-                <video 
-                  src="/videos/airplane-landing.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+                <img 
+                  src="/images/Airplane Landing.jpg"
+                  alt="Dental Tourism in Bulgaria - Airplane Landing"
                   className="w-full h-full object-cover rounded-xl"
-                  onLoadedMetadata={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.playbackRate = 0.75;
-                  }}
                 />
               </div>
             </div>

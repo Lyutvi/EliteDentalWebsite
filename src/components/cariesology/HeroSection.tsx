@@ -27,7 +27,7 @@ const HeroSection = () => {
       
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="order-2 lg:order-1">
+          <div className="order-1 lg:order-1">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 reveal" data-direction="left">
               Advanced <span className="text-gradient-primary">Cariesology</span> Services
             </h1>
@@ -69,7 +69,7 @@ const HeroSection = () => {
             </div>
           </div>
           
-          <div className="order-1 lg:order-2 reveal" data-direction="right">
+          <div className="order-2 lg:order-2 reveal" data-direction="right">
             <div className="relative">
               <img 
                 src="/images/Caries.jpg" 

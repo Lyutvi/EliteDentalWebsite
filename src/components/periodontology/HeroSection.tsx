@@ -30,7 +30,7 @@ const HeroSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
-          <div className="order-2 lg:order-1 reveal" data-direction="left">
+          <div className="order-1 lg:order-1 reveal" data-direction="left">
             <div className="flex items-center space-x-2 mb-4">
               <div className="h-px w-6 bg-dental"></div>
               <span className="text-dental uppercase tracking-wider font-medium text-sm">Gum Health Specialists</span>
@@ -64,7 +64,7 @@ const HeroSection = () => {
           </div>
           
           {/* Image */}
-          <div className="order-1 lg:order-2 reveal" data-direction="right">
+          <div className="order-2 lg:order-2 reveal" data-direction="right">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-dental/30 to-dental-coral/30 rounded-2xl -rotate-6 scale-95 blur-sm"></div>
               <div className="bg-white p-2 rounded-2xl shadow-blue-glow overflow-hidden">
