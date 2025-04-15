@@ -78,7 +78,7 @@ const PrivacyPolicy = () => {
               <p className="text-gray-600 mb-4">
                 For questions about this privacy policy or our privacy practices, please contact us at:<br />
                 Email: info@elitedentalsolutions.com<br />
-                Phone: +359 897 376 002
+                Phone: +359 897 800 430
               </p>
             </section>
 

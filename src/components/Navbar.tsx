@@ -245,13 +245,10 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <a 
-              href="tel:+359897376002" 
-              className="flex items-center text-dental-coral font-medium hover:text-dental-purple transition-colors duration-300"
-            >
-              <Phone size={18} className="mr-2" />
-              <span>+359 897 376 002</span>
-            </a>
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-dental" />
+              <span>+359 897 800 430</span>
+            </div>
           </div>
         </div>
       </div>
@@ -268,14 +265,10 @@ const Navbar = () => {
         }}
       >
         <div className="container mx-auto px-4 py-4 flex flex-col space-y-4 pb-20">
-          <a
-            href="tel:+359897376002"
-            className="flex items-center justify-center gap-2 text-dental-coral hover:text-dental-purple transition-colors duration-300 py-3 border-b border-dental-coral/30"
-            onClick={() => closeMenu()}
-          >
-            <Phone size={20} />
-            <span className="font-medium">+359 897 376 002</span>
-          </a>
+          <div className="flex items-center gap-2">
+            <Phone className="w-4 h-4 text-dental" />
+            <span>+359 897 800 430</span>
+          </div>
 
           {mainNavLinks.map((link, index) => {
             const isExternalPage = !link.href.startsWith('/#');

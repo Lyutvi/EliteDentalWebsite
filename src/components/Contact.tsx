@@ -153,10 +153,10 @@ const Contact = () => {
                     <div className="ml-4">
                       <h4 className="font-medium text-dental-dark">Phone</h4>
                       <a 
-                        href="tel:+359889520202" 
+                        href="tel:+359897800430" 
                         className="text-dental-dark/80 hover:text-dental transition-colors inline-block"
                       >
-                        +359 88 952 0202
+                        +359 897 800 430
                       </a>
                     </div>
                   </div>
@@ -165,7 +165,7 @@ const Contact = () => {
                     <Mail className="w-5 h-5 mt-1 text-dental" />
                     <div className="ml-4">
                       <h4 className="font-medium text-dental-dark">Email</h4>
-                      <p className="text-dental-dark/80">office@elitedentalsolutions.eu</p>
+                      <p className="text-dental-dark/80">info@elitedentalsolutions.eu</p>
                     </div>
                   </div>
                   
@@ -174,8 +174,8 @@ const Contact = () => {
                     <div className="ml-4">
                       <h4 className="font-medium text-dental-dark">Location</h4>
                       <p className="text-dental-dark/80">
-                        ul. "Tsar Asen" 64, <br />
-                        Plovdiv, Bulgaria
+                        Manastirski Livadi, zh.k. Manastirski livadi B 65, <br />
+                        1404 Sofia, Bulgaria
                       </p>
                     </div>
                   </div>
@@ -319,7 +319,7 @@ const Contact = () => {
       {/* Sticky Mobile Call Button */}
       <div className="fixed bottom-6 left-6 md:hidden z-50">
         <a
-          href="tel:+359889520202"
+          href="tel:+359897800430"
           className="flex items-center justify-center gap-2 bg-dental text-white px-4 py-3 rounded-full shadow-lg hover:bg-dental-dark transition-colors duration-300"
         >
           <Phone className="w-5 h-5" />
