@@ -21,37 +21,47 @@ export const createKommoLead = async (formData: ContactFormData) => {
     console.log('Starting form submission with data:', formData);
 
     const kommoData = {
-      name: [{ value: `${formData.firstName} ${formData.lastName}` }],
-      price: [{ value: 0 }],
-      status_id: [{ value: 58844526 }],
-      pipeline_id: [{ value: 7114094 }],
-      responsible_user_id: [{ value: 9531198 }],
+      name: `${formData.firstName} ${formData.lastName}`,
+      price: 0,
+      status_id: 58844526,
+      pipeline_id: 7114094,
+      responsible_user_id: 9531198,
+      custom_fields_values: formData.message ? [
+        {
+          field_id: 728169, // Replace with your actual field ID for message/description
+          values: [
+            {
+              value: formData.message
+            }
+          ]
+        }
+      ] : [],
       _embedded: {
         contacts: [
           {
-            name: `${formData.firstName} ${formData.lastName}`,
             first_name: formData.firstName,
             last_name: formData.lastName,
             custom_fields_values: [
               {
-                field_code: "EMAIL",
-                values: [{ value: formData.email }]
+                field_id: 728167, // Replace with your actual field ID for email
+                values: [
+                  {
+                    value: formData.email
+                  }
+                ]
               },
               {
-                field_code: "PHONE",
-                values: [{ value: formData.phone }]
+                field_id: 728168, // Replace with your actual field ID for phone
+                values: [
+                  {
+                    value: formData.phone
+                  }
+                ]
               }
             ]
           }
-        ],
-        tags: [{ name: "Website Contact Form" }]
-      },
-      custom_fields_values: formData.message ? [
-        {
-          field_code: "DESCRIPTION",
-          values: [{ value: formData.message }]
-        }
-      ] : []
+        ]
+      }
     };
 
     console.log('Sending to Kommo:', JSON.stringify(kommoData, null, 2));
