@@ -4,30 +4,32 @@ import fetch from 'node-fetch';
 const KOMMO_DOMAIN = process.env.KOMMO_DOMAIN;
 const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
 
-interface KommoCustomFieldValue {
-  value: string | number;
+interface KommoValue<T> {
+  value: T;
 }
 
 interface KommoCustomField {
-  field_id: number;
-  values: KommoCustomFieldValue[];
+  field_code: string;
+  values: Array<KommoValue<string>>;
 }
 
 interface KommoContact {
+  name: string;
   first_name: string;
   last_name: string;
   custom_fields_values: KommoCustomField[];
 }
 
 interface KommoLeadData {
-  name: string;
-  price: number;
-  status_id: number;
-  pipeline_id: number;
-  responsible_user_id: number;
+  name: Array<KommoValue<string>>;
+  price: Array<KommoValue<number>>;
+  status_id: Array<KommoValue<number>>;
+  pipeline_id: Array<KommoValue<number>>;
+  responsible_user_id: Array<KommoValue<number>>;
   custom_fields_values: KommoCustomField[];
   _embedded: {
     contacts: KommoContact[];
+    tags: Array<{ name: string }>;
   };
 }
 
@@ -39,35 +41,21 @@ const validateLeadData = (data: any): data is KommoLeadData => {
     return false;
   }
   
-  // Check required fields
-  const requiredFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'] as const;
-  for (const field of requiredFields) {
-    if (typeof data[field] === 'undefined') {
-      console.log(`Missing required field: ${field}`);
+  // Check required array fields
+  const arrayFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'] as const;
+  for (const field of arrayFields) {
+    if (!Array.isArray(data[field])) {
+      console.log(`Field ${field} is not an array:`, data[field]);
       return false;
     }
-  }
-
-  // Validate types
-  if (typeof data.name !== 'string') {
-    console.log('Name is not a string:', data.name);
-    return false;
-  }
-  if (typeof data.price !== 'number') {
-    console.log('Price is not a number:', data.price);
-    return false;
-  }
-  if (typeof data.status_id !== 'number') {
-    console.log('Status ID is not a number:', data.status_id);
-    return false;
-  }
-  if (typeof data.pipeline_id !== 'number') {
-    console.log('Pipeline ID is not a number:', data.pipeline_id);
-    return false;
-  }
-  if (typeof data.responsible_user_id !== 'number') {
-    console.log('Responsible user ID is not a number:', data.responsible_user_id);
-    return false;
+    if (data[field].length === 0) {
+      console.log(`Field ${field} array is empty`);
+      return false;
+    }
+    if (typeof data[field][0]?.value === 'undefined') {
+      console.log(`Field ${field} first element does not have a value property:`, data[field][0]);
+      return false;
+    }
   }
 
   // Check embedded contacts
@@ -82,6 +70,10 @@ const validateLeadData = (data: any): data is KommoLeadData => {
   }
 
   const contact = data._embedded.contacts[0];
+  if (!contact.name || typeof contact.name !== 'string') {
+    console.log('Contact name is missing or not a string:', contact.name);
+    return false;
+  }
   if (!contact.first_name || typeof contact.first_name !== 'string') {
     console.log('Contact first_name is missing or not a string:', contact.first_name);
     return false;
@@ -98,7 +90,7 @@ const validateLeadData = (data: any): data is KommoLeadData => {
   }
 
   for (const field of contact.custom_fields_values) {
-    if (!field.field_id || !Array.isArray(field.values) || field.values.length === 0) {
+    if (!field.field_code || !Array.isArray(field.values) || field.values.length === 0) {
       console.log('Invalid custom field structure:', field);
       return false;
     }
@@ -115,8 +107,9 @@ const DUPLICATE_WINDOW_MS = 5000; // 5 seconds
 const isDuplicateSubmission = (data: KommoLeadData): boolean => {
   // Create a unique key from the submission data
   const key = JSON.stringify({
-    name: data.name,
-    contact: data._embedded.contacts[0]
+    name: data.name[0].value,
+    email: data._embedded.contacts[0].custom_fields_values.find(f => f.field_code === "EMAIL")?.values[0].value,
+    phone: data._embedded.contacts[0].custom_fields_values.find(f => f.field_code === "PHONE")?.values[0].value,
   });
 
   const now = Date.now();
@@ -205,56 +198,66 @@ const handler: Handler = async (event) => {
     // Validate required environment variables
     if (!KOMMO_DOMAIN || !KOMMO_ACCESS_TOKEN) {
       console.error('Missing environment variables');
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ message: 'Server configuration error' }),
-      };
+      throw new Error('Missing required environment variables');
     }
 
-    // Make the API request to Kommo
-    const kommoResponse = await fetch(`https://${KOMMO_DOMAIN}/api/v4/leads`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${KOMMO_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(leadData)
+    const kommoUrl = `https://${KOMMO_DOMAIN}/api/v4/leads`;
+    console.log('Making request to Kommo API:', {
+      url: kommoUrl,
+      data: JSON.stringify(leadData, null, 2)
     });
 
-    const kommoData = await kommoResponse.json();
+    // Make request to Kommo API
+    const response = await fetch(kommoUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KOMMO_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(leadData),
+    });
 
-    if (!kommoResponse.ok) {
-      console.error('Kommo API error:', kommoData);
+    const responseData = await response.json();
+    console.log('Kommo API response status:', response.status);
+    console.log('Kommo API response:', JSON.stringify(responseData, null, 2));
+
+    if (!response.ok) {
+      console.error('Kommo API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: responseData
+      });
       return {
-        statusCode: kommoResponse.status,
+        statusCode: response.status,
         headers,
         body: JSON.stringify({
-          message: 'Error creating lead in Kommo',
-          kommoError: kommoData
-        })
+          message: 'Error creating lead in Kommo CRM',
+          error: responseData,
+          requestData: leadData // Include the request data for debugging
+        }),
       };
     }
 
-    console.log('Lead created successfully:', kommoData);
+    console.log('Successfully created lead');
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({
-        message: 'Lead created successfully',
-        data: kommoData
-      })
+      body: JSON.stringify(responseData),
     };
-
   } catch (error) {
-    console.error('Error processing request:', error);
+    console.error('Error in handler:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({
-        message: 'Internal server error',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })
+      body: JSON.stringify({ 
+        message: 'Error creating lead in Kommo CRM',
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack
+        } : 'Unknown error'
+      }),
     };
   }
 };
