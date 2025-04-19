@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -7,6 +6,7 @@ import ProcessSection from '@/components/dental-tourism/ProcessSection';
 import BenefitsSection from '@/components/dental-tourism/BenefitsSection';
 import FAQSection from '@/components/dental-tourism/FAQSection';
 import ScrollToTop from '@/components/ScrollToTop';
+import FloatingConsultButton from '@/components/dental-tourism/FloatingConsultButton';
 import { initScrollReveal } from '@/utils/scrollReveal';
 
 const DentalTourism = () => {
@@ -36,6 +36,9 @@ const DentalTourism = () => {
       
       {/* Scroll To Top Button */}
       <ScrollToTop />
+
+      {/* Floating Consultation Button */}
+      <FloatingConsultButton />
     </div>
   );
 };

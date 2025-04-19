@@ -10,6 +10,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -160,6 +161,10 @@ const Navbar = () => {
           </a>
 
           <div className="flex items-center space-x-4">
+            {/* Mobile Language Switcher */}
+            <div className="lg:hidden">
+              <LanguageSwitcher />
+            </div>
             <button 
               className="lg:hidden text-dental-dark hover:text-dental transition-colors duration-300 relative z-50"
               onClick={toggleMenu}
@@ -248,6 +253,10 @@ const Navbar = () => {
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-dental" />
               <span>+359 897 800 430</span>
+            </div>
+            {/* Desktop Language Switcher */}
+            <div className="hidden lg:block">
+              <LanguageSwitcher />
             </div>
           </div>
         </div>
