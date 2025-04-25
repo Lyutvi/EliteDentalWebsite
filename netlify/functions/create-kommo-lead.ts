@@ -3,77 +3,81 @@ import fetch from 'node-fetch';
 
 const KOMMO_DOMAIN = process.env.KOMMO_DOMAIN;
 const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
+const WEBSITE_FORM_TAG_ID = 123456; // Replace with your actual tag ID
 
-interface KommoValue<T> {
-  value: T;
-}
-
-interface KommoCustomField {
-  field_code: string;
-  values: Array<KommoValue<string>>;
-}
-
-interface KommoContact {
-  name: string;
-  first_name: string;
-  last_name: string;
-  custom_fields_values: KommoCustomField[];
-}
-
-interface KommoLeadData {
-  name: Array<KommoValue<string>>;
-  price: Array<KommoValue<number>>;
-  status_id: Array<KommoValue<number>>;
-  pipeline_id: Array<KommoValue<number>>;
-  responsible_user_id: Array<KommoValue<number>>;
-  custom_fields_values: KommoCustomField[];
+// Example lead structure for type inference
+const leadExample = {
+  name: '',
+  price: 0,
+  // These IDs must belong to the same pipeline in Kommo
+  pipeline_id: 0,  // Verify this pipeline ID exists
+  status_id: 0,    // This stage must belong to the specified pipeline
+  responsible_user_id: 0, // Must be an active user in the account
+  request_id: '',  // Used by Kommo for deduplication
+  tag_ids: [WEBSITE_FORM_TAG_ID],
+  custom_fields_values: [] as {
+    field_code: string;
+    values: Array<{
+      value: string;
+      enum_code?: "WORK" | "MOB" | "OTHER"; // Valid codes depend on field type
+    }>;
+  }[],
   _embedded: {
-    contacts: KommoContact[];
-    tags: Array<{ name: string }>;
-  };
-}
+    contacts: [{
+      first_name: '',
+      last_name: '',
+      custom_fields_values: [] as {
+        field_code: string;
+        values: Array<{
+          value: string;
+          enum_code?: "WORK" | "MOB" | "OTHER"; // EMAIL: "WORK"/"OTHER", PHONE: "WORK"/"MOB"/"OTHER"
+        }>;
+      }[]
+    }]
+  }
+} as const;
 
-const validateLeadData = (data: any): data is KommoLeadData => {
-  console.log('Starting validation of lead data');
+type KommoLead = typeof leadExample;
+
+const validateLead = (data: unknown): data is KommoLead => {
+  console.log('Validating lead data');
   
   if (!data || typeof data !== 'object') {
     console.log('Data is not an object:', data);
     return false;
   }
+
+  const lead = data as any;
   
-  // Check required array fields
-  const arrayFields = ['name', 'price', 'status_id', 'pipeline_id', 'responsible_user_id'] as const;
-  for (const field of arrayFields) {
-    if (!Array.isArray(data[field])) {
-      console.log(`Field ${field} is not an array:`, data[field]);
-      return false;
-    }
-    if (data[field].length === 0) {
-      console.log(`Field ${field} array is empty`);
-      return false;
-    }
-    if (typeof data[field][0]?.value === 'undefined') {
-      console.log(`Field ${field} first element does not have a value property:`, data[field][0]);
+  // Check required fields
+  const requiredFields = {
+    name: 'string',
+    price: 'number',
+    status_id: 'number',
+    pipeline_id: 'number',
+    responsible_user_id: 'number',
+    request_id: 'string'
+  } as const;
+
+  for (const [field, type] of Object.entries(requiredFields)) {
+    if (typeof lead[field] !== type) {
+      console.log(`Field ${field} is not a ${type}:`, lead[field]);
       return false;
     }
   }
 
   // Check embedded contacts
-  if (!data._embedded?.contacts) {
+  if (!lead._embedded?.contacts) {
     console.log('Missing _embedded.contacts');
     return false;
   }
   
-  if (!Array.isArray(data._embedded.contacts) || data._embedded.contacts.length === 0) {
-    console.log('_embedded.contacts is not a non-empty array:', data._embedded.contacts);
+  if (!Array.isArray(lead._embedded.contacts) || lead._embedded.contacts.length === 0) {
+    console.log('_embedded.contacts is not a non-empty array:', lead._embedded.contacts);
     return false;
   }
 
-  const contact = data._embedded.contacts[0];
-  if (!contact.name || typeof contact.name !== 'string') {
-    console.log('Contact name is missing or not a string:', contact.name);
-    return false;
-  }
+  const contact = lead._embedded.contacts[0];
   if (!contact.first_name || typeof contact.first_name !== 'string') {
     console.log('Contact first_name is missing or not a string:', contact.first_name);
     return false;
@@ -94,54 +98,51 @@ const validateLeadData = (data: any): data is KommoLeadData => {
       console.log('Invalid custom field structure:', field);
       return false;
     }
+    for (const value of field.values) {
+      if (typeof value.value !== 'string') {
+        console.log('Invalid custom field value:', value);
+        return false;
+      }
+    }
   }
 
   console.log('Lead data validation passed');
   return true;
 };
 
-// Store recent submissions to prevent duplicates
-const recentSubmissions = new Map<string, number>();
-const DUPLICATE_WINDOW_MS = 5000; // 5 seconds
+async function createLeadNote(leadId: number, message: string) {
+  if (!message) return;
 
-const isDuplicateSubmission = (data: KommoLeadData): boolean => {
-  // Create a unique key from the submission data
-  const key = JSON.stringify({
-    name: data.name[0].value,
-    email: data._embedded.contacts[0].custom_fields_values.find(f => f.field_code === "EMAIL")?.values[0].value,
-    phone: data._embedded.contacts[0].custom_fields_values.find(f => f.field_code === "PHONE")?.values[0].value,
-  });
+  try {
+    const response = await fetch(`https://${KOMMO_DOMAIN}/api/v4/leads/${leadId}/notes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KOMMO_ACCESS_TOKEN}`
+      },
+      body: JSON.stringify([{
+        note_type: 'common',
+        params: { text: message }
+      }])
+    });
 
-  const now = Date.now();
-  const lastSubmission = recentSubmissions.get(key);
-
-  // Clean up old entries
-  for (const [storedKey, timestamp] of recentSubmissions.entries()) {
-    if (now - timestamp > DUPLICATE_WINDOW_MS) {
-      recentSubmissions.delete(storedKey);
+    if (!response.ok) {
+      console.error('Failed to create lead note:', await response.json());
     }
+  } catch (error) {
+    console.error('Error creating lead note:', error);
   }
-
-  if (lastSubmission && now - lastSubmission < DUPLICATE_WINDOW_MS) {
-    console.log('Duplicate submission detected within window');
-    return true;
-  }
-
-  recentSubmissions.set(key, now);
-  return false;
-};
+}
 
 const handler: Handler = async (event) => {
   console.log('Handler started - Request received');
   
-  // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
-  // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
     console.log('Handling OPTIONS request');
     return {
@@ -151,7 +152,6 @@ const handler: Handler = async (event) => {
     };
   }
 
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     console.log('Invalid HTTP method:', event.httpMethod);
     return {
@@ -164,57 +164,54 @@ const handler: Handler = async (event) => {
   try {
     console.log('Raw event body:', event.body);
     
-    // Parse and validate the incoming request body
-    const rawData = JSON.parse(event.body || '{}');
+    const rawData = JSON.parse(event.body || '[]');
     console.log('Parsed request data:', JSON.stringify(rawData, null, 2));
 
-    if (!validateLeadData(rawData)) {
-      console.error('Invalid lead data structure:', rawData);
+    if (!Array.isArray(rawData) || rawData.length === 0) {
+      console.error('Invalid request: expected non-empty array of leads');
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({
-          message: 'Invalid lead data structure',
+          message: 'Invalid request: expected non-empty array of leads',
           receivedData: rawData
         })
       };
     }
 
-    const leadData: KommoLeadData = rawData;
-
-    // Check for duplicate submissions
-    if (isDuplicateSubmission(leadData)) {
-      console.log('Duplicate submission rejected');
-      return {
-        statusCode: 409,
-        headers,
-        body: JSON.stringify({
-          message: 'Duplicate submission',
-          status: 'rejected'
-        })
-      };
+    // Validate each lead in the array
+    for (const lead of rawData) {
+      if (!validateLead(lead)) {
+        console.error('Invalid lead data structure:', lead);
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            message: 'Invalid lead data structure',
+            receivedData: lead
+          })
+        };
+      }
     }
 
-    // Validate required environment variables
     if (!KOMMO_DOMAIN || !KOMMO_ACCESS_TOKEN) {
       console.error('Missing environment variables');
       throw new Error('Missing required environment variables');
     }
 
-    const kommoUrl = `https://${KOMMO_DOMAIN}/api/v4/leads`;
+    const kommoUrl = `https://${KOMMO_DOMAIN}/api/v4/leads/complex`;
     console.log('Making request to Kommo API:', {
       url: kommoUrl,
-      data: JSON.stringify(leadData, null, 2)
+      data: JSON.stringify(rawData, null, 2)
     });
 
-    // Make request to Kommo API
     const response = await fetch(kommoUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${KOMMO_ACCESS_TOKEN}`,
       },
-      body: JSON.stringify(leadData),
+      body: JSON.stringify(rawData),
     });
 
     const responseData = await response.json();
@@ -233,12 +230,23 @@ const handler: Handler = async (event) => {
         body: JSON.stringify({
           message: 'Error creating lead in Kommo CRM',
           error: responseData,
-          requestData: leadData // Include the request data for debugging
+          requestData: rawData
         }),
       };
     }
 
-    console.log('Successfully created lead');
+    // Create notes for each lead if there's a message
+    const typedResponse = responseData as { _embedded?: { leads: Array<{ id: number; request_id: string }> } };
+    if (typedResponse._embedded?.leads) {
+      for (const lead of typedResponse._embedded.leads) {
+        const originalLead = rawData.find(l => l.request_id === lead.request_id);
+        if (originalLead && 'message' in originalLead) {
+          await createLeadNote(lead.id, originalLead.message);
+        }
+      }
+    }
+
+    console.log('Successfully created lead(s)');
     return {
       statusCode: 200,
       headers,
@@ -247,16 +255,12 @@ const handler: Handler = async (event) => {
   } catch (error) {
     console.error('Error in handler:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ 
-        message: 'Error creating lead in Kommo CRM',
-        error: error instanceof Error ? {
-          message: error.message,
-          stack: error.stack
-        } : 'Unknown error'
+      body: JSON.stringify({
+        message: 'Internal server error',
+        error: error instanceof Error ? error.message : String(error)
       }),
     };
   }

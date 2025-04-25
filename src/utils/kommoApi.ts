@@ -10,58 +10,60 @@ interface ContactFormData {
 let isSubmitting = false;
 
 export const createKommoLead = async (formData: ContactFormData) => {
-  // Prevent multiple simultaneous submissions
-  if (isSubmitting) {
-    console.log('Submission already in progress, skipping');
-    return;
-  }
+  if (isSubmitting) return;
+  isSubmitting = true;
 
   try {
-    isSubmitting = true;
     console.log('Starting form submission with data:', formData);
 
-    const kommoData = {
-      name: [{ value: `${formData.firstName} ${formData.lastName}` }],
-      price: [{ value: 0 }],
-      status_id: [{ value: 58844526 }],
-      pipeline_id: [{ value: 7114094 }],
-      responsible_user_id: [{ value: 9531198 }],
+    const lead = {
+      name: `${formData.firstName} ${formData.lastName}`,
+      price: 0,
+      // IMPORTANT: These IDs must belong to the same pipeline in Kommo
+      pipeline_id: 7114094,  // Verify this pipeline ID exists
+      status_id: 58844526,   // This stage must belong to pipeline 7114094
+      responsible_user_id: 9531198, // Verify this is an active user
+      // request_id is used by Kommo for deduplication
+      request_id: `web-${Date.now()}`,
+      tag_ids: [123456], // Replace with your actual Website Contact Form tag ID
+      custom_fields_values: formData.message
+        ? [{
+            field_code: "DESCRIPTION",
+            values: [{ value: formData.message }]
+          }]
+        : [],
       _embedded: {
-        contacts: [
-          {
-            name: `${formData.firstName} ${formData.lastName}`,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            custom_fields_values: [
-              {
-                field_code: "EMAIL",
-                values: [{ value: formData.email }]
-              },
-              {
-                field_code: "PHONE",
-                values: [{ value: formData.phone }]
-              }
-            ]
-          }
-        ],
-        tags: [{ name: "Website Contact Form" }]
-      },
-      custom_fields_values: formData.message ? [
-        {
-          field_code: "DESCRIPTION",
-          values: [{ value: formData.message }]
-        }
-      ] : []
+        contacts: [{
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          custom_fields_values: [
+            {
+              field_code: "EMAIL",
+              values: [{ 
+                value: formData.email, 
+                enum_code: "WORK"  // Available options: "WORK", "OTHER"
+              }]
+            },
+            {
+              field_code: "PHONE",
+              values: [{ 
+                value: formData.phone, 
+                enum_code: "WORK"  // Available options: "WORK", "MOB", "OTHER"
+              }]
+            }
+          ]
+        }]
+      }
     };
 
-    console.log('Sending to Kommo:', JSON.stringify(kommoData, null, 2));
+    console.log('Sending to Kommo:', JSON.stringify([lead], null, 2));
 
     const response = await fetch('/.netlify/functions/create-kommo-lead', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(kommoData),
+      body: JSON.stringify([lead]), // Send as array of leads
     });
 
     const responseData = await response.json();
