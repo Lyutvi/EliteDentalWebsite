@@ -6,6 +6,28 @@ interface ContactFormData {
   message?: string;
 }
 
+interface KommoLead {
+  name: string;
+  request_id: string;
+  custom_fields_values?: Array<{
+    field_code: string;
+    values: Array<{ value: string }>;
+  }>;
+  _embedded: {
+    contacts: Array<{
+      first_name: string;
+      last_name: string;
+      custom_fields_values: Array<{
+        field_code: string;
+        values: Array<{
+          value: string;
+          enum_code?: "WORK" | "MOB" | "OTHER";
+        }>;
+      }>;
+    }>;
+  };
+}
+
 // Track if a request is in progress
 let isSubmitting = false;
 
@@ -16,22 +38,9 @@ export const createKommoLead = async (formData: ContactFormData) => {
   try {
     console.log('Starting form submission with data:', formData);
 
-    const lead = {
+    const lead: KommoLead = {
       name: `${formData.firstName} ${formData.lastName}`,
-      price: 0,
-      // IMPORTANT: These IDs must belong to the same pipeline in Kommo
-      pipeline_id: 7114094,  // Verify this pipeline ID exists
-      status_id: 58844526,   // This stage must belong to pipeline 7114094
-      responsible_user_id: 9531198, // Verify this is an active user
-      // request_id is used by Kommo for deduplication
       request_id: `web-${Date.now()}`,
-      tag_ids: [123456], // Replace with your actual Website Contact Form tag ID
-      custom_fields_values: formData.message
-        ? [{
-            field_code: "DESCRIPTION",
-            values: [{ value: formData.message }]
-          }]
-        : [],
       _embedded: {
         contacts: [{
           first_name: formData.firstName,
@@ -55,6 +64,14 @@ export const createKommoLead = async (formData: ContactFormData) => {
         }]
       }
     };
+
+    // Add message if provided
+    if (formData.message) {
+      lead.custom_fields_values = [{
+        field_code: "DESCRIPTION",
+        values: [{ value: formData.message }]
+      }];
+    }
 
     console.log('Sending to Kommo:', JSON.stringify([lead], null, 2));
 

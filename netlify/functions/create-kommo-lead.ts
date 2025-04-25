@@ -1,25 +1,69 @@
 import { Handler } from '@netlify/functions';
 import fetch from 'node-fetch';
 
-const KOMMO_DOMAIN = process.env.KOMMO_DOMAIN;
-const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
-const WEBSITE_FORM_TAG_ID = 123456; // Replace with your actual tag ID
+// ---------- constants you know ----------
+const KOMMO_DOMAIN = process.env.KOMMO_DOMAIN!;
+const KOMMO_TOKEN = process.env.KOMMO_ACCESS_TOKEN!;
+const MAIN_PIPELINE = 9821267;  // your stable pipeline ID
+// ----------------------------------------
+
+interface KommoStatus {
+  id: number;
+  name: string;
+}
+
+interface KommoUser {
+  id: number;
+  name: string;
+}
+
+interface KommoResponse<T> {
+  _embedded: T;
+}
+
+let cached = {
+  stageId: 0,
+  responsibleId: 0,
+  lookedUp: false
+};
+
+async function kommoGET<T>(path: string): Promise<T> {
+  const response = await fetch(`https://${KOMMO_DOMAIN}${path}`, {
+    headers: { Authorization: `Bearer ${KOMMO_TOKEN}` }
+  });
+  return response.json() as Promise<T>;
+}
+
+async function ensureIds() {
+  if (cached.lookedUp) return;  // fast path after first run
+
+  // 1) first stage ("New") inside the main pipeline
+  const stagesResp = await kommoGET<KommoResponse<{ statuses: KommoStatus[] }>>(
+    `/api/v4/leads/pipelines/${MAIN_PIPELINE}/statuses?limit=1&order=asc`
+  );
+  cached.stageId = stagesResp._embedded.statuses[0].id;
+
+  // 2) first active user (token owner is always first)
+  const usersResp = await kommoGET<KommoResponse<{ users: KommoUser[] }>>(
+    '/api/v4/users?limit=1&order=asc'
+  );
+  cached.responsibleId = usersResp._embedded.users[0].id;
+
+  cached.lookedUp = true;  // mark as cached
+}
 
 // Example lead structure for type inference
 const leadExample = {
   name: '',
-  price: 0,
-  // These IDs must belong to the same pipeline in Kommo
-  pipeline_id: 0,  // Verify this pipeline ID exists
-  status_id: 0,    // This stage must belong to the specified pipeline
-  responsible_user_id: 0, // Must be an active user in the account
-  request_id: '',  // Used by Kommo for deduplication
-  tag_ids: [WEBSITE_FORM_TAG_ID],
+  pipeline_id: MAIN_PIPELINE,
+  status_id: 0,
+  responsible_user_id: 0,
+  request_id: '',
   custom_fields_values: [] as {
     field_code: string;
     values: Array<{
       value: string;
-      enum_code?: "WORK" | "MOB" | "OTHER"; // Valid codes depend on field type
+      enum_code?: "WORK" | "MOB" | "OTHER";
     }>;
   }[],
   _embedded: {
@@ -30,7 +74,7 @@ const leadExample = {
         field_code: string;
         values: Array<{
           value: string;
-          enum_code?: "WORK" | "MOB" | "OTHER"; // EMAIL: "WORK"/"OTHER", PHONE: "WORK"/"MOB"/"OTHER"
+          enum_code?: "WORK" | "MOB" | "OTHER";
         }>;
       }[]
     }]
@@ -52,9 +96,8 @@ const validateLead = (data: unknown): data is KommoLead => {
   // Check required fields
   const requiredFields = {
     name: 'string',
-    price: 'number',
-    status_id: 'number',
     pipeline_id: 'number',
+    status_id: 'number',
     responsible_user_id: 'number',
     request_id: 'string'
   } as const;
@@ -118,7 +161,7 @@ async function createLeadNote(leadId: number, message: string) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KOMMO_ACCESS_TOKEN}`
+        'Authorization': `Bearer ${KOMMO_TOKEN}`
       },
       body: JSON.stringify([{
         note_type: 'common',
@@ -162,6 +205,9 @@ const handler: Handler = async (event) => {
   }
 
   try {
+    // Ensure we have the correct IDs before processing
+    await ensureIds();
+
     console.log('Raw event body:', event.body);
     
     const rawData = JSON.parse(event.body || '[]');
@@ -179,8 +225,16 @@ const handler: Handler = async (event) => {
       };
     }
 
+    // Update IDs in the leads
+    const leads = rawData.map(lead => ({
+      ...lead,
+      pipeline_id: MAIN_PIPELINE,
+      status_id: cached.stageId,
+      responsible_user_id: cached.responsibleId
+    }));
+
     // Validate each lead in the array
-    for (const lead of rawData) {
+    for (const lead of leads) {
       if (!validateLead(lead)) {
         console.error('Invalid lead data structure:', lead);
         return {
@@ -194,24 +248,19 @@ const handler: Handler = async (event) => {
       }
     }
 
-    if (!KOMMO_DOMAIN || !KOMMO_ACCESS_TOKEN) {
-      console.error('Missing environment variables');
-      throw new Error('Missing required environment variables');
-    }
-
     const kommoUrl = `https://${KOMMO_DOMAIN}/api/v4/leads/complex`;
     console.log('Making request to Kommo API:', {
       url: kommoUrl,
-      data: JSON.stringify(rawData, null, 2)
+      data: JSON.stringify(leads, null, 2)
     });
 
     const response = await fetch(kommoUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KOMMO_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${KOMMO_TOKEN}`,
       },
-      body: JSON.stringify(rawData),
+      body: JSON.stringify(leads),
     });
 
     const responseData = await response.json();
@@ -230,7 +279,7 @@ const handler: Handler = async (event) => {
         body: JSON.stringify({
           message: 'Error creating lead in Kommo CRM',
           error: responseData,
-          requestData: rawData
+          requestData: leads
         }),
       };
     }
@@ -239,7 +288,7 @@ const handler: Handler = async (event) => {
     const typedResponse = responseData as { _embedded?: { leads: Array<{ id: number; request_id: string }> } };
     if (typedResponse._embedded?.leads) {
       for (const lead of typedResponse._embedded.leads) {
-        const originalLead = rawData.find(l => l.request_id === lead.request_id);
+        const originalLead = leads.find(l => l.request_id === lead.request_id);
         if (originalLead && 'message' in originalLead) {
           await createLeadNote(lead.id, originalLead.message);
         }
