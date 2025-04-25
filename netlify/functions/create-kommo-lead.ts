@@ -37,9 +37,9 @@ async function kommoGET<T>(path: string): Promise<T> {
 async function ensureIds() {
   if (cached.lookedUp) return;  // fast path after first run
 
-  // 1) first stage ("New") inside the main pipeline
+  // 1) first stage ("New") inside the main pipeline - fixed query params
   const stagesResp = await kommoGET<KommoResponse<{ statuses: KommoStatus[] }>>(
-    `/api/v4/leads/pipelines/${MAIN_PIPELINE}/statuses?limit=1&order=asc`
+    `/api/v4/leads/pipelines/${MAIN_PIPELINE}/statuses`
   );
   cached.stageId = stagesResp._embedded.statuses[0].id;
 
@@ -59,13 +59,7 @@ const leadExample = {
   status_id: 0,
   responsible_user_id: 0,
   request_id: '',
-  custom_fields_values: [] as {
-    field_code: string;
-    values: Array<{
-      value: string;
-      enum_code?: "WORK" | "MOB" | "OTHER";
-    }>;
-  }[],
+  message: '',  // optional message that will be converted to note
   _embedded: {
     contacts: [{
       first_name: '',
@@ -149,6 +143,8 @@ const validateLead = (data: unknown): data is KommoLead => {
     }
   }
 
+  // Note: message field validation removed since it's handled before POST
+
   console.log('Lead data validation passed');
   return true;
 };
@@ -225,13 +221,19 @@ const handler: Handler = async (event) => {
       };
     }
 
-    // Update IDs in the leads
-    const leads = rawData.map(lead => ({
-      ...lead,
-      pipeline_id: MAIN_PIPELINE,
-      status_id: cached.stageId,
-      responsible_user_id: cached.responsibleId
-    }));
+    // Update IDs in the leads and separate message for notes
+    const leads = rawData.map(lead => {
+      const { message, ...leadForKommo } = lead;
+      return {
+        ...leadForKommo,
+        pipeline_id: MAIN_PIPELINE,
+        status_id: cached.stageId,
+        responsible_user_id: cached.responsibleId
+      };
+    });
+
+    // Store messages for later use
+    const messageMap = new Map(rawData.map(lead => [lead.request_id, lead.message]));
 
     // Validate each lead in the array
     for (const lead of leads) {
@@ -284,14 +286,13 @@ const handler: Handler = async (event) => {
       };
     }
 
-    // Create notes for each lead if there's a message
-    const typedResponse = responseData as { _embedded?: { leads: Array<{ id: number; request_id: string }> } };
-    if (typedResponse._embedded?.leads) {
-      for (const lead of typedResponse._embedded.leads) {
-        const originalLead = leads.find(l => l.request_id === lead.request_id);
-        if (originalLead && 'message' in originalLead) {
-          await createLeadNote(lead.id, originalLead.message);
-        }
+    // Create notes for each lead if there's a message - fixed array handling
+    const created = Array.isArray(responseData) ? responseData : [];
+    for (const { id, request_id } of created) {
+      const req = Array.isArray(request_id) ? request_id[0] : request_id;
+      const msg = messageMap.get(req);
+      if (msg) {
+        await createLeadNote(id, msg);
       }
     }
 

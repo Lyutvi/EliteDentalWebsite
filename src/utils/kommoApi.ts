@@ -9,10 +9,7 @@ interface ContactFormData {
 interface KommoLead {
   name: string;
   request_id: string;
-  custom_fields_values?: Array<{
-    field_code: string;
-    values: Array<{ value: string }>;
-  }>;
+  message?: string;
   _embedded: {
     contacts: Array<{
       first_name: string;
@@ -65,12 +62,9 @@ export const createKommoLead = async (formData: ContactFormData) => {
       }
     };
 
-    // Add message if provided
+    // Add message if provided (will be converted to note by Netlify function)
     if (formData.message) {
-      lead.custom_fields_values = [{
-        field_code: "DESCRIPTION",
-        values: [{ value: formData.message }]
-      }];
+      lead.message = formData.message;
     }
 
     console.log('Sending to Kommo:', JSON.stringify([lead], null, 2));
